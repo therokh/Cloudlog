@@ -23,9 +23,7 @@ class Lotw extends CI_Controller {
 		set_time_limit(0);
 
 		$this->load->library('adif_parser');
-
 		$this->adif_parser->load_from_file($filepath);
-
 		$this->adif_parser->initialize();
 
 		$tableheaders = "<table width=\"100%\">";
@@ -43,9 +41,7 @@ class Lotw extends CI_Controller {
 			$table = "";
 			while($record = $this->adif_parser->get_record())
 			{
-
 				$time_on = date('Y-m-d', strtotime($record['qso_date'])) ." ".date('H:i', strtotime($record['time_on']));
-
 				$qsl_date = date('Y-m-d', strtotime($record['qslrdate'])) ." ".date('H:i', strtotime($record['qslrdate']));
 
 				if (isset($record['time_off'])) {
@@ -66,7 +62,6 @@ class Lotw extends CI_Controller {
 				if($status == "No Match" && $skipNewQso != NULL) {
 
                     $station_id = $this->logbook_model->find_correct_station_id($record['station_callsign'], $record['my_gridsquare']);
-
                     if ($station_id != NULL) {
                         $result = $this->logbook_model->import($record, $station_id, NULL, NULL, NULL);  // Create the Entry
                         if ($result == "") {
@@ -75,7 +70,6 @@ class Lotw extends CI_Controller {
                             $lotw_status = $result;
                         }
                     }
-
 				} else {
 					if (isset($record['state'])) {
 						$state = $record['state'];
@@ -85,7 +79,6 @@ class Lotw extends CI_Controller {
 
 					$lotw_status = $this->logbook_model->lotw_update($time_on, $record['call'], $record['band'], $qsl_date, $record['qsl_rcvd'], $state);
 				}
-
 
 				$table .= "<tr>";
 					$table .= "<td>".$time_on."</td>";
@@ -133,8 +126,8 @@ class Lotw extends CI_Controller {
 
 			// Get credentials for LoTW
 			$query = $this->user_model->get_by_id($this->session->userdata('user_id'));
-    	    $q = $query->row();
-    	    $data['user_lotw_name'] = $q->user_lotw_name;
+			$q = $query->row();
+			$data['user_lotw_name'] = $q->user_lotw_name;
 			$data['user_lotw_password'] = $q->user_lotw_password;
 
 			// Get URL for downloading LoTW
@@ -148,13 +141,12 @@ class Lotw extends CI_Controller {
 			{
 				$this->session->set_flashdata('warning', 'You have not defined your ARRL LoTW credentials!'); redirect('lotw/import');
 			}
-
-            $customDate = $this->input->post('from');
-
+			
+			$customDate = $this->input->post('from');
 			if ($customDate != NULL) {
-                $customDate = DateTime::createFromFormat('d/m/Y', $customDate);
-                $customDate = $customDate->format('Y-m-d');
-                $lotw_last_qsl_date = date($customDate);
+				$customDate = DateTime::createFromFormat('d/m/Y', $customDate);
+				$customDate = $customDate->format('Y-m-d');
+				$lotw_last_qsl_date = date($customDate);
             }
             else {
                 // Query the logbook to determine when the last LoTW confirmation was
@@ -170,8 +162,8 @@ class Lotw extends CI_Controller {
 			//TODO: Option to specifiy whether we download location data from LoTW or not
 			//$lotw_url .= "&qso_qsldetail=\"yes\";
 
-            $lotw_url .= "&qso_qslsince=";
-            $lotw_url .= "$lotw_last_qsl_date";
+			$lotw_url .= "&qso_qslsince=";
+			$lotw_url .= "$lotw_last_qsl_date";
 
 			// Only pull back entries that belong to this callsign
 			$lotw_call = $this->session->userdata('user_callsign');
@@ -186,9 +178,7 @@ class Lotw extends CI_Controller {
 		{
 			if ( ! $this->upload->do_upload())
 			{
-
 				$data['error'] = $this->upload->display_errors();
-
 				$this->load->view('interface_assets/header', $data);
 				$this->load->view('lotw/import');
 				$this->load->view('interface_assets/footer');
@@ -196,7 +186,6 @@ class Lotw extends CI_Controller {
 			else
 			{
 				$data = array('upload_data' => $this->upload->data());
-
 				$this->loadFromFile('./uploads/'.$data['upload_data']['file_name']);
 			}
 		}
@@ -206,7 +195,7 @@ class Lotw extends CI_Controller {
 		$this->load->model('user_model');
 		if(!$this->user_model->authorize(2)) { $this->session->set_flashdata('notice', 'You\'re not allowed to do that!'); redirect('dashboard'); }
 
-	$data['page_title'] = "LoTW .TQ8 Upload";
+		$data['page_title'] = "LoTW .TQ8 Upload";
 
 		$config['upload_path'] = './uploads/';
 		$config['allowed_types'] = 'tq8|TQ8';
@@ -232,8 +221,8 @@ class Lotw extends CI_Controller {
 
 			// Set some fields that we're going to need for ARRL login
 			$query = $this->user_model->get_by_id($this->session->userdata('user_id'));
-    		$q = $query->row();
-    		$fields['login'] = $q->user_lotw_name;
+			$q = $query->row();
+			$fields['login'] = $q->user_lotw_name;
 			$fields['password'] = $q->user_lotw_password;
 			$fields['acct_sel'] = "";
 
@@ -243,7 +232,6 @@ class Lotw extends CI_Controller {
 			}
 
 			// Curl stuff goes here
-
 			// First we need to get a cookie
 
 			// options
@@ -287,28 +275,27 @@ class Lotw extends CI_Controller {
 			   $this->session->set_flashdata('warning', 'Your ARRL username and/or password is incorrect.'); redirect('lotw/status');
 			}
 
-
 			// Now we need to use that cookie and upload the file
 			// change URL to upload destination URL
 			curl_setopt($ch, CURLOPT_URL, $config['lotw_login_url']);
 
 			// Grab the file
 			$postfile = array(
-        		"upfile"=>"@./uploads/".$data['upload_data']['file_name'],
+        			"upfile"=>"@./uploads/".$data['upload_data']['file_name'],
     		);
 
-    		//Upload it
-    		curl_setopt($ch, CURLOPT_POSTFIELDS, $postfile);
-    		$response = curl_exec($ch);
+			//Upload it
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $postfile);
+			$response = curl_exec($ch);
 			if (stristr($response, "accepted"))
 			{
-			   $this->session->set_flashdata('lotw_status', 'accepted');
-			   $data['page_title'] = "LoTW .TQ8 Sent";
+				$this->session->set_flashdata('lotw_status', 'accepted');
+				$data['page_title'] = "LoTW .TQ8 Sent";
 			}
 			elseif (stristr($response, "rejected"))
 			{
-					$this->session->set_flashdata('lotw_status', 'rejected');
-					$data['page_title'] = "LoTW .TQ8 Sent";
+				$this->session->set_flashdata('lotw_status', 'rejected');
+				$data['page_title'] = "LoTW .TQ8 Sent";
 			}
 			else
 			{
@@ -329,12 +316,11 @@ class Lotw extends CI_Controller {
 	}
 
 	/*
-		Load the ARRL LOTW User Activity CSV into LOTW User Table for cross checking when logging
+	Load the ARRL LOTW User Activity CSV into LOTW User Table for cross checking when logging
 	*/
 	function load_users() {
 		set_time_limit(0);
 		$this->load->model('lotw_user');
-
 		$this->lotw_user->empty_table();
 
 		$row = 1;
@@ -348,23 +334,16 @@ class Lotw extends CI_Controller {
 		        	$upload_date = $data[1]." ".$data[2];
 		        	$this->lotw_user->add_lotwuser($callsign, $upload_date);
 		    	}
-
 		    }
 		    fclose($handle);
 		}
-
 	}
 
 	/*
-		Check if callsign is an active LOTW user and return whether its true or not
+	Check if callsign is an active LOTW user and return whether its true or not
 	*/
 	function lotw_usercheck($callsign) {
 		$this->load->model('lotw_user');
- 
-
 		$lotw_user_result = $this->lotw_user->check($callsign);
-
-
 	}
-
 } // end class
